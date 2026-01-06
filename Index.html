@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>德川家康業績系統</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <style>
+    /* iOS 優化 */
+    body { -webkit-tap-highlight-color: transparent; }
+    /* Toggle Switch */
+    .toggle-checkbox:checked { right: 0; border-color: #68D391; }
+    .toggle-checkbox:checked + .toggle-label { background-color: #68D391; }
+    [v-cloak] { display: none; }
+    .progress-bar { transition: width 1s ease-in-out; }
+    .login-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen">
+
+<div id="app" v-cloak>
+
+  <div v-if="!selectedMaster" class="login-bg min-h-screen flex flex-col justify-center items-center p-4">
+    <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-md">
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-100 mb-4">
+          <i class="fa-solid fa-spa text-indigo-600 text-3xl"></i>
+        </div>
+        <h1 class="text-2xl font-bold text-slate-800">德川家康業績系統</h1>
+        <p class="text-slate-500 mt-2 text-sm">行動版 v2.0</p>
+      </div>
+
+      <div v-if="loadingMasterList" class="flex justify-center py-4">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+      </div>
+
+      <div v-else class="space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-slate-700 mb-2">請選擇師傅</label>
+          <select v-model="tempSelectedMaster" class="block w-full p-3 border border-slate-300 rounded-lg bg-slate-50 outline-none focus:ring-2 focus:ring-indigo-500">
+            <option value="" disabled>請選擇...</option>
+            <option v-for="m in masterList" :value="m">{{ m }}</option>
+          </select>
+        </div>
+        <button @click="login" :disabled="!tempSelectedMaster"
+                class="w-full py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold disabled:opacity-50 transition">
+          進入儀表板
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div v-else class="flex flex-col max-w-5xl mx-auto p-2 md:p-6 min-h-screen">
+    
+    <header class="bg-white rounded-xl shadow-sm p-4 mb-4 flex flex-col md:flex-row justify-between items-center gap-4 sticky top-0 z-20">
+      <div class="flex items-center justify-between w-full md:w-auto">
+        <div class="flex items-center gap-3">
+          <button @click="logout" class="text-slate-400 hover:text-slate-600">
+            <i class="fa-solid fa-arrow-left text-xl"></i>
+          </button>
+          <div>
+            <h1 class="text-lg font-bold text-slate-700">{{ selectedMaster }}</h1>
+          </div>
+        </div>
+        <button @click="triggerSync" :disabled="syncing" class="md:hidden text-indigo-600 font-bold text-sm flex items-center gap-1">
+          <i class="fa-solid fa-rotate" :class="{'fa-spin': syncing}"></i> {{ syncing ? '同步中' : '同步' }}
+        </button>
+      </div>
+
+      <div class="flex gap-2 w-full md:w-auto">
+        <input type="month" v-model="selectedMonth" @change="fetchData" class="border border-slate-300 rounded-lg px-3 py-2 text-sm flex-1 outline-none">
+        <button @click="triggerSync" :disabled="syncing"
+                class="hidden md:flex px-4 py-2 bg-indigo-50 text-indigo-700 rounded-lg text-sm font-bold items-center gap-2">
+          <i class="fa-solid fa-rotate" :class="{'fa-spin': syncing}"></i> {{ syncing ? '同步中' : '同步日曆' }}
+        </button>
+      </div>
+    </header>
+
+    <div v-if="loadingData" class="flex-1 flex justify-center items-center py-20">
+      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-indigo-600"></div>
+    </div>
+
+    <div v-else>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-emerald-500">
+          <p class="text-xs text-slate-500 font-bold uppercase mb-1">本月預估薪資</p>
+          <span class="text-2xl font-extrabold text-slate-800">$ {{ formatCurrency(stats.estimated_total_salary || 0) }}</span>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-blue-500">
+          <div class="flex justify-between mb-2">
+            <p class="text-xs text-slate-500 font-bold uppercase">時數進度</p>
+            <span class="text-xs font-bold px-2 py-0.5 rounded" :class="stats.is_high_tier ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'">
+              {{ stats.is_high_tier ? 'High Tier' : 'Low Tier' }}
+            </span>
+          </div>
+          <div class="flex items-end gap-1 mb-2">
+            <span class="text-2xl font-bold">{{ stats.total_hours || 0 }}</span>
+            <span class="text-sm text-slate-400">/ 128 H</span>
+          </div>
+          <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+            <div class="bg-blue-500 h-2.5 rounded-full progress-bar" :style="{ width: Math.min(((stats.total_hours || 0) / 128) * 100, 100) + '%' }"></div>
+          </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-xl shadow-sm border-l-4 border-purple-500 flex justify-between text-center">
+          <div><span class="block font-bold text-lg">{{ stats.completed_orders || 0 }}</span><span class="text-xs text-slate-400">完成</span></div>
+          <div><span class="block font-bold text-lg text-red-500">{{ stats.noshow_count || 0 }}</span><span class="text-xs text-slate-400">NoShow</span></div>
+          <div><span class="block font-bold text-lg text-indigo-600">{{ stats.assigned_count || 0 }}</span><span class="text-xs text-slate-400">指定</span></div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-xl shadow-sm overflow-hidden">
+        <div class="px-6 py-4 bg-slate-50 border-b border-slate-100 flex justify-between items-center">
+          <h3 class="font-bold text-slate-700">訂單 ({{ orders.length }})</h3>
+          <span class="text-xs text-slate-400">{{ lastUpdated }} 更新</span>
+        </div>
+        
+        <ul>
+          <li v-for="order in orders" :key="order.id" class="border-b border-slate-50 p-4 md:px-6 hover:bg-slate-50 transition">
+            <div class="flex justify-between items-start mb-2">
+              <div>
+                <div class="font-bold text-indigo-900">{{ formatDate(order.date_str) }} <span class="text-slate-400 text-xs font-normal ml-1">{{ order.time_str }}</span></div>
+                <div class="font-bold text-slate-800 mt-1">{{ order.customer_name }}</div>
+              </div>
+              <div class="text-right">
+                <div class="font-bold text-emerald-600">$ {{ formatCurrency(order.price_revenue) }}</div>
+                <div class="flex gap-3 mt-2">
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only" :checked="order.is_noshow" @change="toggleNoShow(order)">
+                    <div class="w-8 h-4 rounded-full transition" :class="order.is_noshow ? 'bg-red-400' : 'bg-slate-200'">
+                      <div class="w-4 h-4 bg-white rounded-full transition transform" :class="{'translate-x-4': order.is_noshow}"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">NS</span>
+                  </label>
+                  <label class="flex flex-col items-center cursor-pointer">
+                    <input type="checkbox" class="sr-only" :checked="order.is_assigned" @change="toggleAssigned(order)">
+                    <div class="w-8 h-4 rounded-full transition" :class="order.is_assigned ? 'bg-indigo-400' : 'bg-slate-200'">
+                      <div class="w-4 h-4 bg-white rounded-full transition transform" :class="{'translate-x-4': order.is_assigned}"></div>
+                    </div>
+                    <span class="text-[10px] text-slate-400">指定</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex flex-wrap gap-1 mt-2">
+              <span v-for="p in (order.plan_variants || [])" class="px-2 py-0.5 rounded text-xs bg-blue-50 text-blue-700 border border-blue-100">{{ p }}</span>
+              <span v-if="order.service_type === 'Gomaji'" class="px-2 py-0.5 rounded text-xs bg-orange-50 text-orange-700 border border-orange-100">Gomaji-{{ order.gomaji_tier }}</span>
+              <span v-for="t in (order.tool_types || [])" class="px-2 py-0.5 rounded text-xs" :class="t.includes('結構') ? 'bg-emerald-50 text-emerald-700' : 'bg-purple-50 text-purple-700'">{{ t }}</span>
+            </div>
+          </li>
+          <li v-if="orders.length === 0" class="p-8 text-center text-slate-400">無訂單資料</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // 【請在此填入資訊】
+  const SUPABASE_URL = 'https://oypgzyarpeyyuagtmkvn.supabase.co'; 
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im95cGd6eWFycGV5eXVhZ3Rta3ZuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc2MTYzMTgsImV4cCI6MjA4MzE5MjMxOH0.HJUakXZHMgmtKCZFMT-pCLKZbVr7xpGVBDRvj5juy9A';
+  
+  // 【請在此填入 GAS 部署網址】(/exec 結尾)
+  const GAS_API_URL = 'https://script.google.com/macros/s/AKfycbx2vrL0Far3_KRYocTWb6-OEWChwyUxMVMruacSGDaPm1_YuAoi21m2XMdkkjL58W0R/exec';
+
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const { createApp } = Vue;
+
+  createApp({
+    data() {
+      return {
+        loadingMasterList: true, loadingData: false, syncing: false,
+        masterList: [], tempSelectedMaster: '', selectedMaster: '',
+        selectedMonth: new Date().toISOString().slice(0, 7),
+        stats: {}, orders: [], lastUpdated: ''
+      }
+    },
+    async mounted() { await this.loadMasterList(); },
+    methods: {
+      async loadMasterList() {
+        this.loadingMasterList = true;
+        const { data: masters } = await db.from('view_monthly_stats').select('master_name').order('master_name');
+        if (masters) this.masterList = [...new Set(masters.map(m => m.master_name))];
+        this.loadingMasterList = false;
+      },
+      login() { if (this.tempSelectedMaster) { this.selectedMaster = this.tempSelectedMaster; this.fetchData(); } },
+      logout() { this.selectedMaster = ''; this.tempSelectedMaster = ''; this.stats = {}; this.orders = []; },
+      
+      async fetchData() {
+        if (!this.selectedMaster) return;
+        this.loadingData = true;
+        try {
+          const { data: statData } = await db.from('view_monthly_stats').select('*').eq('master_name', this.selectedMaster).eq('month_str', this.selectedMonth).single();
+          this.stats = statData || {};
+          const { data: orderData } = await db.from('view_order_details').select('*').eq('master_name', this.selectedMaster).ilike('date_str', `${this.selectedMonth}%`).order('order_date', { ascending: false });
+          this.orders = orderData || [];
+          this.lastUpdated = new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'});
+        } catch (e) { console.error(e); } finally { this.loadingData = false; }
+      },
+
+      // 改用 fetch 呼叫 GAS API
+      async triggerSync() {
+        this.syncing = true;
+        // 使用 no-cors 模式發送請求 (因為 GAS 轉址有時會觸發 CORS 錯誤，但實際上會執行)
+        try {
+          await fetch(GAS_API_URL, { 
+            method: 'POST',
+            mode: 'no-cors', // 關鍵：忽略 CORS 錯誤，只管發送
+            headers: { 'Content-Type': 'application/json' }
+          });
+          // 盲等 3 秒讓後端跑一下，然後重新抓資料
+          setTimeout(() => {
+            this.syncing = false;
+            this.fetchData();
+            // 簡單提示
+            alert('同步指令已發送，資料更新中');
+          }, 3000);
+        } catch (err) {
+          console.error(err);
+          this.syncing = false;
+          alert('連線異常');
+        }
+      },
+
+      async toggleNoShow(order) {
+        const old = order.is_noshow; order.is_noshow = !old;
+        const { error } = await db.from('orders').update({ is_noshow: order.is_noshow }).eq('id', order.id);
+        if (error) { order.is_noshow = old; alert('更新失敗'); } else this.refreshStats();
+      },
+      async toggleAssigned(order) {
+        const old = order.is_assigned; order.is_assigned = !old;
+        const { error } = await db.from('orders').update({ is_assigned: order.is_assigned }).eq('id', order.id);
+        if (error) { order.is_assigned = old; alert('更新失敗'); } else this.refreshStats();
+      },
+      async refreshStats() {
+        const { data } = await db.from('view_monthly_stats').select('*').eq('master_name', this.selectedMaster).eq('month_str', this.selectedMonth).single();
+        if (data) this.stats = data;
+      },
+      formatCurrency(val) { return Math.round(val).toLocaleString(); },
+      formatDate(dateStr) { return dateStr ? dateStr.slice(5) : ''; }
+    }
+  }).mount('#app');
+</script>
+</body>
+</html>
