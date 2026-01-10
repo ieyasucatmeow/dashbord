@@ -232,7 +232,7 @@
             <!-- Slide 1: Main Stats (Compact) -->
             <div class="w-full flex-shrink-0 snap-center p-4 min-h-[140px] flex flex-col justify-center">
               <div class="flex justify-between items-start mb-1">
-                <p class="text-xs text-slate-500 font-extrabold uppercase tracking-wider">本月目前報酬 (預估)</p>
+                <p class="text-xs text-slate-500 font-extrabold uppercase tracking-wider">本月目前報酬</p>
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-bold border"
                       :class="stats.is_high_tier_reached ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'">
                    {{ stats.is_high_tier_reached ? 'HIGH' : 'NORMAL' }}
@@ -243,7 +243,7 @@
               </span>
               <div class="mt-2">
                 <div class="flex justify-between items-baseline text-xs mb-1 font-bold">
-                  <span class="text-slate-500">時數進度 (含預約)</span>
+                  <span class="text-slate-500">時數進度</span>
                   <span class="text-slate-700 text-lg">{{ stats.completed_hours || 0 }} <span class="text-slate-400 text-xs">/ {{ progressMax }} H</span></span>
                 </div>
                 <div class="w-full bg-slate-300 rounded-full h-2.5 overflow-hidden border border-slate-200">
@@ -326,7 +326,7 @@
           <div class="grid grid-cols-4 gap-2">
             <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
               <span class="text-lg font-black text-slate-700 leading-none">{{ stats.completed_count || 0 }}</span>
-              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">有效單數</span>
+              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">已完成</span>
             </div>
             <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
               <span class="text-lg font-black text-emerald-600 leading-none">{{ stats.tool_count || 0 }}</span>
@@ -334,7 +334,7 @@
             </div>
             <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
               <span class="text-lg font-black text-indigo-600 leading-none">{{ stats.assigned_count || 0 }}</span>
-              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">指定客</span>
+              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">指定</span>
             </div>
             <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
               <span class="text-lg font-black text-rose-500 leading-none">{{ stats.noshow_count || 0 }}</span>
@@ -916,3 +916,4 @@
 </script>
 </body>
 </html>
+
