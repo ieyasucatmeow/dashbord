@@ -124,7 +124,6 @@
 
   <!-- Login View -->
   <div v-if="!selectedMaster" class="flex-1 flex flex-col justify-center items-center p-6 safe-top safe-bottom relative">
-    <!-- Background Decor -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px]"></div>
     </div>
@@ -132,7 +131,6 @@
     <div class="glass-panel w-full max-w-sm p-8 rounded-3xl animate-fade-in-up shadow-2xl relative z-10">
       <div class="text-center mb-10">
         <div class="relative inline-block">
-          <!-- LOGO: Increased width to 560px (w-[560px]) -->
           <img :src="logoUrl" alt="Logo" class="relative w-[560px] h-auto object-contain drop-shadow-xl mx-auto">
         </div>
       </div>
@@ -355,6 +353,13 @@
             <!-- Loop Orders -->
             <template v-for="(order, index) in orders" :key="order.id">
               
+              <!-- Separator: Show if Current is 'Future' AND Next is 'Past' -->
+              <li v-if="shouldShowSeparator(index)" class="py-4 flex items-center gap-4 text-slate-400">
+                <div class="h-px bg-slate-500/50 flex-1"></div>
+                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">HISTORY</span>
+                <div class="h-px bg-slate-500/50 flex-1"></div>
+              </li>
+
               <li class="p-4 transition duration-300 relative mb-4 rounded-xl border border-white/40 shadow-sm mx-2"
                   :class="{'bg-slate-900/50 brightness-75 grayscale': order.is_noshow}">
                 
@@ -412,14 +417,6 @@
                   </div>
                 </div>
               </li>
-              
-              <!-- Separator: Show AFTER the card if Current is 'Future' AND Next is 'Past' -->
-              <li v-if="shouldShowSeparator(index)" class="py-4 flex items-center gap-4 text-slate-400">
-                <div class="h-px bg-slate-500/50 flex-1"></div>
-                <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">HISTORY</span>
-                <div class="h-px bg-slate-500/50 flex-1"></div>
-              </li>
-
             </template>
             
             <li v-if="orders.length === 0" class="py-12 text-center">
@@ -573,9 +570,19 @@
             let points = 0;
             const dur = order.duration_minutes || 0;
             if (order.service_type === 'Standard') {
-               if (dur === 100) { points = 2.0; this.breakdown.std100++; }
-               else if (dur === 75) { points = 1.5; this.breakdown.std75++; }
-               else if (dur === 50) { points = 1.0; this.breakdown.std50++; }
+                // If plan_variants exists, calculate from array for composite orders
+                if (order.plan_variants && Array.isArray(order.plan_variants)) {
+                    order.plan_variants.forEach(plan => {
+                        if (plan.includes('100')) { points += 2.0; this.breakdown.std100++; }
+                        else if (plan.includes('75')) { points += 1.5; this.breakdown.std75++; }
+                        else if (plan.includes('50')) { points += 1.0; this.breakdown.std50++; }
+                    });
+                } else {
+                    // Fallback for simple standard orders
+                   if (dur === 100) { points = 2.0; this.breakdown.std100++; }
+                   else if (dur === 75) { points = 1.5; this.breakdown.std75++; }
+                   else if (dur === 50) { points = 1.0; this.breakdown.std50++; }
+                }
             } else if (order.service_type === 'Gomaji') {
                this.breakdown.gomajiTotal++;
                if (['A'].includes(order.gomaji_tier)) { points = 1.0; this.breakdown.gomajiA++; }
@@ -593,16 +600,31 @@
 
            // 1. Base Salary
            if (order.service_type === 'Standard') {
-              const dur = order.duration_minutes || 0;
-              if (isHighTier) {
-                 if (dur === 100) salary += 1100;
-                 else if (dur === 75) salary += 800;
-                 else if (dur === 50) salary += 600;
-              } else {
-                 if (dur === 100) salary += 1000;
-                 else if (dur === 75) salary += 750;
-                 else if (dur === 50) salary += 500;
-              }
+                if (order.plan_variants && Array.isArray(order.plan_variants)) {
+                    order.plan_variants.forEach(plan => {
+                        if (isHighTier) {
+                            if (plan.includes('100')) salary += 1100;
+                            else if (plan.includes('75')) salary += 800;
+                            else if (plan.includes('50')) salary += 600;
+                        } else {
+                            if (plan.includes('100')) salary += 1000;
+                            else if (plan.includes('75')) salary += 750;
+                            else if (plan.includes('50')) salary += 500;
+                        }
+                    });
+                } else {
+                    // Fallback
+                    const dur = order.duration_minutes || 0;
+                    if (isHighTier) {
+                        if (dur === 100) salary += 1100;
+                        else if (dur === 75) salary += 800;
+                        else if (dur === 50) salary += 600;
+                    } else {
+                        if (dur === 100) salary += 1000;
+                        else if (dur === 75) salary += 750;
+                        else if (dur === 50) salary += 500;
+                    }
+                }
            } else {
               salary += (Number(order.price) || 0);
            }
@@ -916,4 +938,3 @@
 </script>
 </body>
 </html>
-
