@@ -124,7 +124,6 @@
 
   <!-- Login View -->
   <div v-if="!selectedMaster" class="flex-1 flex flex-col justify-center items-center p-6 safe-top safe-bottom relative">
-    <!-- Background Decor -->
     <div class="absolute inset-0 overflow-hidden pointer-events-none">
       <div class="absolute top-1/4 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-indigo-500/10 rounded-full blur-[100px]"></div>
     </div>
@@ -188,7 +187,7 @@
     
     <div class="mt-8 text-white/30 text-[10px] font-medium tracking-widest uppercase flex flex-col items-center gap-1">
       <span>&copy; 2024 Tokugawa Ieyasu System</span>
-      <span class="opacity-70">Ver 2.5.0</span>
+      <span class="opacity-70">Ver 2.5.1 </span>
     </div>
   </div>
 
@@ -234,7 +233,10 @@
             <!-- Slide 1: Main Stats (Compact) -->
             <div class="w-full flex-shrink-0 snap-center p-4 min-h-[140px] flex flex-col justify-center">
               <div class="flex justify-between items-start mb-1">
-                <p class="text-xs text-slate-500 font-extrabold uppercase tracking-wider">本月目前報酬</p>
+                <p class="text-xs text-slate-500 font-extrabold uppercase tracking-wider">
+                  本月目前報酬 
+                  <span class="text-[10px] font-medium opacity-50 normal-case tracking-normal ml-1">(僅供參考，以子灝結算為主)</span>
+                </p>
                 <span class="text-[10px] px-2 py-0.5 rounded-full font-bold border"
                       :class="stats.is_high_tier_reached ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 'bg-slate-50 text-slate-600 border-slate-200'">
                    {{ stats.is_high_tier_reached ? 'HIGH' : 'NORMAL' }}
@@ -323,31 +325,43 @@
           </div>
         </div>
 
-        <!-- Sticky Quick Stats -->
-        <div class="sticky top-[68px] z-40 pb-2"> 
-          <div class="grid grid-cols-4 gap-2">
-            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
+        <!-- Sticky Quick Stats (New Layout: 2 Rows x 3 Cols with Scroll Hide) -->
+        <div class="sticky top-[68px] z-40 pb-2 transition-all duration-300 ease-in-out origin-top"
+             :class="showQuickStats ? 'translate-y-0 opacity-100' : '-translate-y-[120%] opacity-0 pointer-events-none'"> 
+          <div class="grid grid-cols-3 gap-2">
+            <!-- Row 1 -->
+            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center shadow-sm">
               <span class="text-lg font-black text-slate-700 leading-none">{{ stats.completed_count || 0 }}</span>
               <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">已完成</span>
             </div>
-            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
-              <span class="text-lg font-black text-emerald-600 leading-none">{{ stats.tool_count || 0 }}</span>
-              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">工具</span>
-            </div>
-            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
+            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center shadow-sm">
               <span class="text-lg font-black text-indigo-600 leading-none">{{ stats.assigned_count || 0 }}</span>
               <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">指定</span>
             </div>
-            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center">
+            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center shadow-sm">
               <span class="text-lg font-black text-rose-500 leading-none">{{ stats.noshow_count || 0 }}</span>
               <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">NoShow</span>
+            </div>
+            <!-- Row 2 -->
+            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center shadow-sm">
+              <span class="text-lg font-black text-teal-600 leading-none">{{ stats.tag_count || 0 }}</span>
+              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">會員標籤</span>
+            </div>
+            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center shadow-sm">
+              <span class="text-lg font-black text-amber-600 leading-none">{{ stats.remark_count || 0 }}</span>
+              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">會員備註</span>
+            </div>
+            <div class="glass-panel p-2 py-3 rounded-xl text-center flex flex-col items-center justify-center shadow-sm">
+              <span class="text-lg font-black text-pink-600 leading-none">{{ stats.health_count || 0 }}</span>
+              <span class="text-[10px] text-slate-500 font-bold mt-1 scale-90 origin-center whitespace-nowrap">健康聲明</span>
             </div>
           </div>
         </div>
 
         <!-- Orders List -->
         <div class="glass-panel rounded-2xl overflow-hidden shadow-sm border-0 mb-4">
-          <div class="px-5 py-3 bg-slate-50/50 border-b border-slate-200/50 flex justify-between items-center backdrop-blur-sm sticky top-0 z-10">
+          <!-- 移除 sticky 與 backdrop-blur 避免手機端渲染模糊重疊的問題 -->
+          <div class="px-5 py-3 bg-slate-50/90 border-b border-slate-200/50 flex justify-between items-center">
             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">
               訂單列表 <span class="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ orders.length }}</span>
             </h3>
@@ -357,7 +371,7 @@
             <!-- Loop Orders -->
             <template v-for="(order, index) in orders" :key="order.id">
               
-              <!-- Separator: Show if Current is 'Future' AND Next is 'Past' -->
+              <!-- Separator -->
               <li v-if="shouldShowSeparator(index)" class="py-4 flex items-center gap-4 text-slate-400">
                 <div class="h-px bg-slate-500/50 flex-1"></div>
                 <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">HISTORY</span>
@@ -395,30 +409,63 @@
                   <span v-for="t in (order.tool_types || [])" class="px-2.5 py-1 rounded text-[11px] font-bold border" :class="t.includes('結構') ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-purple-50 text-purple-600 border-purple-100'">{{ t }}</span>
                 </div>
 
-                <div class="flex justify-end items-center pt-2 border-t border-slate-200/50 mt-2 gap-4">
-                  <div class="flex gap-4">
-                    <label v-if="order.service_type === 'Gomaji'" class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
-                      <span class="text-[10px] font-bold" :class="order.is_addon ? 'text-orange-500' : 'text-slate-400'">+100</span>
-                      <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.is_addon ? 'bg-orange-400' : 'bg-slate-200'">
-                        <input type="checkbox" class="sr-only" :checked="order.is_addon" @change="toggleAddon(order)">
-                        <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.is_addon}"></div>
-                      </div>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
-                      <span class="text-[10px] font-bold" :class="order.is_assigned ? 'text-indigo-600' : 'text-slate-400'">指定</span>
-                      <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.is_assigned ? 'bg-indigo-500' : 'bg-slate-200'">
-                        <input type="checkbox" class="sr-only" :checked="order.is_assigned" @change="toggleAssigned(order)">
-                        <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.is_assigned}"></div>
-                      </div>
-                    </label>
-                    <label class="flex items-center gap-2 cursor-pointer group">
-                      <span class="text-[10px] font-bold" :class="order.is_noshow ? 'text-rose-500' : 'text-slate-400'">NoShow</span>
-                      <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.is_noshow ? 'bg-rose-600' : 'bg-slate-200'">
-                        <input type="checkbox" class="sr-only" :checked="order.is_noshow" @change="toggleNoShow(order)">
-                        <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.is_noshow}"></div>
-                      </div>
-                    </label>
-                  </div>
+                <!-- Toggles (New layout) -->
+                <div class="flex flex-wrap justify-end items-center pt-3 border-t border-slate-200/50 mt-3 gap-x-4 gap-y-3">
+                  
+                  <!-- Gomaji +100 -->
+                  <label v-if="order.service_type === 'Gomaji'" class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
+                    <span class="text-[10px] font-bold" :class="order.is_addon ? 'text-orange-500' : 'text-slate-400'">+100</span>
+                    <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.is_addon ? 'bg-orange-400' : 'bg-slate-200'">
+                      <input type="checkbox" class="sr-only" :checked="order.is_addon" @change="toggleAddon(order)">
+                      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.is_addon}"></div>
+                    </div>
+                  </label>
+
+                  <!-- 標籤 (Tag) (受 NoShow 鎖定) -->
+                  <label class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
+                    <span class="text-[10px] font-bold" :class="order.has_tag ? 'text-teal-600' : 'text-slate-400'">標籤</span>
+                    <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.has_tag ? 'bg-teal-500' : 'bg-slate-200'">
+                      <input type="checkbox" class="sr-only" :checked="order.has_tag" @change="toggleTag(order)">
+                      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.has_tag}"></div>
+                    </div>
+                  </label>
+
+                  <!-- 備註 (Remark) (受 NoShow 鎖定) -->
+                  <label class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
+                    <span class="text-[10px] font-bold" :class="order.has_remark ? 'text-amber-600' : 'text-slate-400'">備註</span>
+                    <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.has_remark ? 'bg-amber-500' : 'bg-slate-200'">
+                      <input type="checkbox" class="sr-only" :checked="order.has_remark" @change="toggleRemark(order)">
+                      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.has_remark}"></div>
+                    </div>
+                  </label>
+
+                  <!-- 健康聲明 (Health) (受 NoShow 鎖定) -->
+                  <label class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
+                    <span class="text-[10px] font-bold" :class="order.has_health ? 'text-pink-600' : 'text-slate-400'">健康聲明</span>
+                    <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.has_health ? 'bg-pink-500' : 'bg-slate-200'">
+                      <input type="checkbox" class="sr-only" :checked="order.has_health" @change="toggleHealth(order)">
+                      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.has_health}"></div>
+                    </div>
+                  </label>
+
+                  <!-- 指定 (Assigned) -->
+                  <label class="flex items-center gap-2 cursor-pointer group" :class="{'pointer-events-none opacity-50': order.is_noshow}">
+                    <span class="text-[10px] font-bold" :class="order.is_assigned ? 'text-indigo-600' : 'text-slate-400'">指定</span>
+                    <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.is_assigned ? 'bg-indigo-500' : 'bg-slate-200'">
+                      <input type="checkbox" class="sr-only" :checked="order.is_assigned" @change="toggleAssigned(order)">
+                      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.is_assigned}"></div>
+                    </div>
+                  </label>
+
+                  <!-- NoShow -->
+                  <label class="flex items-center gap-2 cursor-pointer group">
+                    <span class="text-[10px] font-bold" :class="order.is_noshow ? 'text-rose-500' : 'text-slate-400'">NoShow</span>
+                    <div class="relative w-9 h-5 rounded-full transition-colors duration-200" :class="order.is_noshow ? 'bg-rose-600' : 'bg-slate-200'">
+                      <input type="checkbox" class="sr-only" :checked="order.is_noshow" @change="toggleNoShow(order)">
+                      <div class="absolute left-0.5 top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" :class="{'translate-x-4': order.is_noshow}"></div>
+                    </div>
+                  </label>
+
                 </div>
               </li>
             </template>
@@ -453,6 +500,8 @@
         loadingData: false,
         syncing: false,
         scrolled: false,
+        lastScrollY: 0,
+        showQuickStats: true,
         logoUrl: 'https://ieyasuretreat.com/wp-content/uploads/2020/09/logo-a%E6%B7%B1%E8%97%8D-2.png', 
         masterList: [],
         tempSelectedMaster: '',
@@ -506,24 +555,12 @@
       window.removeEventListener('scroll', this.handleScroll);
     },
     methods: {
-      // Separator Logic: Show only when transition from Future (Not completed) to Past (Completed)
       shouldShowSeparator(index) {
-        // Must have a next item
         if (!this.orders[index + 1]) return false;
-        
         const current = this.orders[index];
         const next = this.orders[index + 1];
-
-        // "NoShow" is conceptually "Done", so treat it as completed for separation logic if needed.
-        // But specifically: We want separating "In Progress" (Top) from "Done" (Bottom).
-        // Orders are sorted by Date DESC (Newest at Top).
-        // If sorting is DESC: Future orders are at index 0. Past orders are at index N.
-        // Transition: Current is Future (Not Completed) AND Next is Past (Completed).
-        
         const isCurrFinished = this.isOrderCompleted(current) || current.is_noshow;
         const isNextFinished = this.isOrderCompleted(next) || next.is_noshow;
-
-        // If current is NOT finished, but next IS finished => Separator
         return !isCurrFinished && isNextFinished;
       },
 
@@ -539,10 +576,13 @@
       calculateLocalStats() {
         let salary = 0;
         let completedCount = 0;
-        let toolCount = 0;
         let assignedCount = 0;
         let noshowCount = 0;
         let totalPoints = 0;
+        
+        let tagCount = 0;
+        let remarkCount = 0;
+        let healthCount = 0;
         
         this.breakdown = { std100:0, std75:0, std50:0, gomajiA:0, gomajiB:0, gomajiC:0, gomajiTotal:0, toolKnife:0, toolCupping:0, toolGuaSha:0 };
         const toolKeywords = ['筋膜刀', '拔罐', '刮痧'];
@@ -553,20 +593,22 @@
             return; 
           }
 
+          // 邏輯跟著會員：只要開啟，就重複累加計數 (已排除 NoShow)
+          if (order.has_tag) tagCount++;
+          if (order.has_remark) remarkCount++;
+          if (order.has_health) healthCount++;
+
           // STRICT CHECK: Only count COMPLETED orders
           if (this.isOrderCompleted(order)) {
             completedCount++;
             if (order.is_assigned) assignedCount++;
 
-            // Tools Stats - Modified to exclude Gomaji
+            // Tools Stats
             if (order.service_type !== 'Gomaji' && order.tool_types && Array.isArray(order.tool_types)) {
               order.tool_types.forEach(tool => {
-                if (toolKeywords.some(k => tool.includes(k))) {
-                  toolCount++;
-                  if(tool.includes('筋膜刀')) this.breakdown.toolKnife++;
-                  if(tool.includes('拔罐')) this.breakdown.toolCupping++;
-                  if(tool.includes('刮痧')) this.breakdown.toolGuaSha++;
-                }
+                if(tool.includes('筋膜刀')) this.breakdown.toolKnife++;
+                if(tool.includes('拔罐')) this.breakdown.toolCupping++;
+                if(tool.includes('刮痧')) this.breakdown.toolGuaSha++;
               });
             }
 
@@ -574,7 +616,6 @@
             let points = 0;
             const dur = order.duration_minutes || 0;
             if (order.service_type === 'Standard') {
-                // If plan_variants exists, calculate from array for composite orders
                 if (order.plan_variants && Array.isArray(order.plan_variants)) {
                     order.plan_variants.forEach(plan => {
                         if (plan.includes('100')) { points += 2.0; this.breakdown.std100++; }
@@ -582,7 +623,6 @@
                         else if (plan.includes('50')) { points += 1.0; this.breakdown.std50++; }
                     });
                 } else {
-                    // Fallback for simple standard orders
                    if (dur === 100) { points = 2.0; this.breakdown.std100++; }
                    else if (dur === 75) { points = 1.5; this.breakdown.std75++; }
                    else if (dur === 50) { points = 1.0; this.breakdown.std50++; }
@@ -600,7 +640,7 @@
         const isHighTier = totalPoints >= 128;
 
         this.orders.forEach(order => {
-           if (order.is_noshow || !this.isOrderCompleted(order)) return; // STRICT CHECK AGAIN
+           if (order.is_noshow || !this.isOrderCompleted(order)) return;
 
            // 1. Base Salary
            if (order.service_type === 'Standard') {
@@ -617,7 +657,6 @@
                         }
                     });
                 } else {
-                    // Fallback
                     const dur = order.duration_minutes || 0;
                     if (isHighTier) {
                         if (dur === 100) salary += 1100;
@@ -646,9 +685,11 @@
         this.stats = {
            ...this.stats,
            completed_count: completedCount,
-           tool_count: toolCount,
            assigned_count: assignedCount,
            noshow_count: noshowCount,
+           tag_count: tagCount,         // 恢復為計算次數 (排除 NoShow)
+           remark_count: remarkCount,   // 恢復為計算次數 (排除 NoShow)
+           health_count: healthCount,   // 恢復為計算次數 (排除 NoShow)
            completed_hours: totalPoints.toFixed(1),
            total_salary: salary,
            is_high_tier_reached: isHighTier
@@ -677,8 +718,19 @@
       },
 
       handleScroll() {
-        this.scrolled = window.scrollY > 10;
+        const currentScrollY = window.scrollY;
+        this.scrolled = currentScrollY > 10;
+        
+        // Quick Stats Scroll Hide Logic (下滑超過 100px 隱藏，往上回滾立即顯示)
+        if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
+           this.showQuickStats = false;
+        } else if (currentScrollY < this.lastScrollY) {
+           this.showQuickStats = true;
+        }
+        
+        this.lastScrollY = currentScrollY <= 0 ? 0 : currentScrollY;
       },
+
       showToast(message, type = 'info') {
         const id = Date.now();
         this.toasts.push({ id, message, type });
@@ -690,20 +742,13 @@
       async loadMasterList() {
         this.loadingMasterList = true;
         try {
-          const { data: masters, error } = await db.from('monthly_salary_stats')
-            .select('master_name');
-            
+          const { data: masters, error } = await db.from('monthly_salary_stats').select('master_name');
           if (error) throw error;
-          
-          if (masters) {
-            this.masterList = [...new Set(masters.map(m => m.master_name))].sort();
-          }
+          if (masters) this.masterList = [...new Set(masters.map(m => m.master_name))].sort();
         } catch (e) {
           console.error(e);
           const { data: fallbackData } = await db.from('orders').select('master_name').limit(2000);
-          if (fallbackData) {
-             this.masterList = [...new Set(fallbackData.map(m => m.master_name))].sort();
-          }
+          if (fallbackData) this.masterList = [...new Set(fallbackData.map(m => m.master_name))].sort();
         } finally {
           this.loadingMasterList = false;
         }
@@ -750,6 +795,8 @@
         this.stats = {};
         this.orders = [];
         this.scrolled = false;
+        this.lastScrollY = 0;
+        this.showQuickStats = true;
         localStorage.removeItem('tokugawa_master');
         window.scrollTo(0,0);
       },
@@ -803,7 +850,6 @@
             mode: 'no-cors', 
             headers: { 'Content-Type': 'application/json' }
           });
-          
           setTimeout(() => {
             this.syncing = false;
             this.fetchData();
@@ -815,14 +861,17 @@
         }
       },
 
+      // Toggles
       async toggleNoShow(order) {
         const originalState = order.is_noshow;
         order.is_noshow = !originalState; 
         
         let priceCorrection = 0;
 
+        // 當 NoShow 開啟時，取消指定、取消 Gomaji 加購 (但不清空 標籤/備註/健康聲明，只是不列入計算與鎖定開關)
         if (order.is_noshow) {
             order.is_assigned = false;
+
             if (order.is_addon) {
                order.is_addon = false; 
                priceCorrection = -100; 
@@ -847,79 +896,145 @@
           order.is_noshow = originalState; 
           if(priceCorrection !== 0) order.price -= priceCorrection; 
           if(priceCorrection === -100) order.is_addon = true; 
-          
           console.error(error);
           this.showToast('更新失敗', 'error');
           this.calculateLocalStats(); 
         } else {
           this.fetchData(true); 
-          if(order.is_noshow) {
-             this.showToast('標記為 NoShow', 'success');
-          }
+          if(order.is_noshow) { this.showToast('標記為 NoShow', 'success'); }
         }
       },
 
       async toggleAssigned(order) {
         if(order.is_noshow) return; 
-
         const originalState = order.is_assigned;
         order.is_assigned = !originalState; 
-        
         this.calculateLocalStats(); 
-
         const { error } = await db.from('orders').update({ is_assigned: order.is_assigned }).eq('id', order.id);
-        
         if (error) {
           order.is_assigned = originalState; 
-          console.error(error);
           this.showToast('更新失敗', 'error');
           this.calculateLocalStats();
-        } else {
+        } else { this.fetchData(true); }
+      },
+
+      async toggleTag(order) {
+        if(order.is_noshow) return;
+        const targetName = order.customer_name;
+        if(!targetName) return;
+
+        const newState = !order.has_tag;
+        
+        // 1. 同步變更本地所有同名會員的標籤
+        this.orders.forEach(o => {
+            if (o.customer_name === targetName) {
+                o.has_tag = newState;
+            }
+        });
+        this.calculateLocalStats(); 
+        
+        // 2. 更新資料庫中所有同名會員的標籤
+        const { error } = await db.from('orders')
+            .update({ has_tag: newState })
+            .eq('master_name', this.selectedMaster)
+            .eq('customer_name', targetName);
+
+        if (error) {
+          // 若失敗則退回原本狀態
+          this.orders.forEach(o => {
+              if (o.customer_name === targetName) {
+                  o.has_tag = !newState;
+              }
+          });
+          this.showToast('更新失敗', 'error');
+          this.calculateLocalStats();
+        } else { 
+          this.fetchData(true); 
+        }
+      },
+
+      async toggleRemark(order) {
+        if(order.is_noshow) return;
+        const targetName = order.customer_name;
+        if(!targetName) return;
+
+        const newState = !order.has_remark;
+        
+        this.orders.forEach(o => {
+            if (o.customer_name === targetName) {
+                o.has_remark = newState;
+            }
+        });
+        this.calculateLocalStats(); 
+        
+        const { error } = await db.from('orders')
+            .update({ has_remark: newState })
+            .eq('master_name', this.selectedMaster)
+            .eq('customer_name', targetName);
+
+        if (error) {
+          this.orders.forEach(o => {
+              if (o.customer_name === targetName) {
+                  o.has_remark = !newState;
+              }
+          });
+          this.showToast('更新失敗', 'error');
+          this.calculateLocalStats();
+        } else { 
+          this.fetchData(true); 
+        }
+      },
+
+      async toggleHealth(order) {
+        if(order.is_noshow) return;
+        const targetName = order.customer_name;
+        if(!targetName) return;
+
+        const newState = !order.has_health;
+        
+        this.orders.forEach(o => {
+            if (o.customer_name === targetName) {
+                o.has_health = newState;
+            }
+        });
+        this.calculateLocalStats(); 
+        
+        const { error } = await db.from('orders')
+            .update({ has_health: newState })
+            .eq('master_name', this.selectedMaster)
+            .eq('customer_name', targetName);
+
+        if (error) {
+          this.orders.forEach(o => {
+              if (o.customer_name === targetName) {
+                  o.has_health = !newState;
+              }
+          });
+          this.showToast('更新失敗', 'error');
+          this.calculateLocalStats();
+        } else { 
           this.fetchData(true); 
         }
       },
 
       async toggleAddon(order) {
         if(order.is_noshow) return;
-
         const originalState = order.is_addon;
         const originalPrice = Number(order.price) || 0; 
-        
         order.is_addon = !originalState; 
-        
         let newPrice = originalPrice;
-        if (order.is_addon) {
-            newPrice += 100;
-        } else {
-            newPrice -= 100;
-        }
+        if (order.is_addon) newPrice += 100; else newPrice -= 100;
         order.price = newPrice; 
-        
         this.calculateLocalStats(); 
-
-        const { error } = await db.from('orders').update({ 
-            is_addon: order.is_addon,
-            price: newPrice 
-        }).eq('id', order.id);
-        
+        const { error } = await db.from('orders').update({ is_addon: order.is_addon, price: newPrice }).eq('id', order.id);
         if (error) {
-          order.is_addon = originalState;
-          order.price = originalPrice;
-          console.error(error);
-          if (error.code === 'PGRST204') {
-             this.showToast('資料庫缺少 is_addon 欄位，請聯繫管理員', 'error');
-          } else {
-             this.showToast('更新失敗', 'error');
-          }
+          order.is_addon = originalState; order.price = originalPrice;
+          this.showToast('更新失敗', 'error');
           this.calculateLocalStats();
-        } else {
-          this.fetchData(true); 
-        }
+        } else { this.fetchData(true); }
       },
 
-      formatCurrency(val) {
-        return Math.round(val).toLocaleString();
-      },
+      formatCurrency(val) { return Math.round(val).toLocaleString(); },
       formatDate(dateStr) {
         if (!dateStr) return '';
         const d = new Date(dateStr);
@@ -929,7 +1044,6 @@
         if (!order.order_date) return '';
         const d = new Date(order.order_date);
         const start = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-        
         if (order.duration_minutes) {
              const endD = new Date(d.getTime() + order.duration_minutes * 60000);
              const end = `${String(endD.getHours()).padStart(2,'0')}:${String(endD.getMinutes()).padStart(2,'0')}`;
