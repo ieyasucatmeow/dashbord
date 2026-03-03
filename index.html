@@ -167,7 +167,7 @@
         <div class="relative group">
           <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">密碼</label>
           <div class="relative">
-            <input type="password" v-model="password" placeholder="請輸入密碼 (預設 8888)" inputmode="numeric" pattern="[0-9]*" @input="password = password.replace(/\D/g, '')"
+            <input type="password" v-model="password" placeholder="請輸入密碼" inputmode="numeric" pattern="[0-9]*" @input="password = password.replace(/\D/g, '')"
                    class="glass-input block w-full pl-4 pr-10 py-4 rounded-xl text-base font-bold text-slate-800 outline-none placeholder-slate-400 transition-all shadow-sm focus:ring-2 focus:ring-indigo-500/50"
                    @keyup.enter="login">
             <div class="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-slate-400">
@@ -1056,3 +1056,4 @@
 </script>
 </body>
 </html>
+
