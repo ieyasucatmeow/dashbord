@@ -186,8 +186,8 @@
     </div>
     
     <div class="mt-8 text-white/30 text-[10px] font-medium tracking-widest uppercase flex flex-col items-center gap-1">
-      <span>&copy; 2024 Tokugawa Ieyasu System</span>
-      <span class="opacity-70">Ver 2.5.1 </span>
+      <span>&copy; 2024 輔助統計系統</span>
+      <span class="opacity-70">Ver 2.6.0 (更名版)</span>
     </div>
   </div>
 
@@ -360,7 +360,6 @@
 
         <!-- Orders List -->
         <div class="glass-panel rounded-2xl overflow-hidden shadow-sm border-0 mb-4">
-          <!-- 移除 sticky 與 backdrop-blur 避免手機端渲染模糊重疊的問題 -->
           <div class="px-5 py-3 bg-slate-50/90 border-b border-slate-200/50 flex justify-between items-center">
             <h3 class="font-bold text-slate-700 text-sm flex items-center gap-2">
               訂單列表 <span class="bg-slate-200 text-slate-600 text-[10px] px-2 py-0.5 rounded-full font-bold">{{ orders.length }}</span>
@@ -588,15 +587,15 @@
         const toolKeywords = ['筋膜刀', '拔罐', '刮痧'];
 
         this.orders.forEach(order => {
-          if (order.is_noshow) {
-            noshowCount++;
-            return; 
-          }
-
           // 邏輯跟著會員：只要開啟，就重複累加計數 (已排除 NoShow)
           if (order.has_tag) tagCount++;
           if (order.has_remark) remarkCount++;
           if (order.has_health) healthCount++;
+
+          if (order.is_noshow) {
+            noshowCount++;
+            return; 
+          }
 
           // STRICT CHECK: Only count COMPLETED orders
           if (this.isOrderCompleted(order)) {
@@ -687,9 +686,9 @@
            completed_count: completedCount,
            assigned_count: assignedCount,
            noshow_count: noshowCount,
-           tag_count: tagCount,         // 恢復為計算次數 (排除 NoShow)
-           remark_count: remarkCount,   // 恢復為計算次數 (排除 NoShow)
-           health_count: healthCount,   // 恢復為計算次數 (排除 NoShow)
+           tag_count: tagCount,
+           remark_count: remarkCount,
+           health_count: healthCount,
            completed_hours: totalPoints.toFixed(1),
            total_salary: salary,
            is_high_tier_reached: isHighTier
@@ -721,7 +720,7 @@
         const currentScrollY = window.scrollY;
         this.scrolled = currentScrollY > 10;
         
-        // Quick Stats Scroll Hide Logic (下滑超過 100px 隱藏，往上回滾立即顯示)
+        // Quick Stats Scroll Hide Logic
         if (currentScrollY > this.lastScrollY && currentScrollY > 100) {
            this.showQuickStats = false;
         } else if (currentScrollY < this.lastScrollY) {
@@ -760,7 +759,7 @@
         
         try {
           if(!this.password) {
-             this.showToast('請輸入密碼 (預設 8888)', 'error');
+             this.showToast('請輸入密碼', 'error');
              this.verifying = false;
              return;
           }
@@ -1056,4 +1055,5 @@
 </script>
 </body>
 </html>
+
 
