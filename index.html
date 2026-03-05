@@ -5,6 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>輔助統計系統</title>
   
+  <!-- SEO & Social Meta Tags (專門解決 LINE 預覽抓到亂碼的問題) -->
+  <meta name="description" content="專屬輔助統計系統，提供即時數據分析與訂單管理。">
+  <meta property="og:title" content="輔助統計系統">
+  <meta property="og:description" content="專屬輔助統計系統，提供即時數據分析與訂單管理，登入以查看詳細資訊。">
+  <meta property="og:image" content="https://ieyasuretreat.com/wp-content/uploads/2020/09/logo-a%E6%B7%B1%E8%97%8D-2.png">
+  <meta property="og:type" content="website">
+  
   <!-- Libraries -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -152,7 +159,7 @@
 
       <div v-else class="space-y-6">
         <div class="relative group">
-          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">選擇師傅</label>
+          <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2 ml-1">選擇人員</label>
           <div class="relative">
             <select v-model="tempSelectedMaster" class="glass-input block w-full pl-4 pr-10 py-4 rounded-xl text-lg font-bold text-slate-800 appearance-none transition-all cursor-pointer shadow-sm hover:bg-white">
               <option value="" disabled>請點擊選擇...</option>
@@ -187,7 +194,7 @@
     
     <div class="mt-8 text-white/30 text-[10px] font-medium tracking-widest uppercase flex flex-col items-center gap-1">
       <span>&copy; 2024 輔助統計系統</span>
-      <span class="opacity-70">Ver 2.6.0 (更名版)</span>
+      <span class="opacity-70">Ver 2.6.1 (修復 LINE 預覽)</span>
     </div>
   </div>
 
